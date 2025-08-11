@@ -18,7 +18,6 @@ import {IEntryPoint} from "lib/account-abstraction/contracts/interfaces/IEntryPo
  *      Validates user operations via ECDSA signatures and manages prefunding for gas.
  */
 contract AA_Contract is IAccount, Ownable {
-
     ////////////////////////////////////////////////////////////////////////////////
     //                                ERRORS                                      //
     ////////////////////////////////////////////////////////////////////////////////
@@ -93,14 +92,7 @@ contract AA_Contract is IAccount, Ownable {
      * @param value The amount of ETH (in wei) to send.
      * @param functionData The calldata for the target contract function.
      */
-    function execute(
-        address dest,
-        uint256 value,
-        bytes calldata functionData
-    )
-        external
-        requireFromEntryPointOrOwner
-    {
+    function execute(address dest, uint256 value, bytes calldata functionData) external requireFromEntryPointOrOwner {
         (bool success, bytes memory result) = dest.call{value: value}(functionData);
         if (!success) {
             revert AA_Account__CallFailed(result);
@@ -115,11 +107,7 @@ contract AA_Contract is IAccount, Ownable {
      * @param missingAccountFunds The amount of ETH required to prefund the operation.
      * @return validationData Encoded validation result per EIP-4337.
      */
-    function validateUserOp(
-        PackedUserOperation calldata userOp,
-        bytes32 userOpHash,
-        uint256 missingAccountFunds
-    )
+    function validateUserOp(PackedUserOperation calldata userOp, bytes32 userOpHash, uint256 missingAccountFunds)
         external
         requireFromEntryPoint
         returns (uint256 validationData)
@@ -141,10 +129,7 @@ contract AA_Contract is IAccount, Ownable {
      * @param userOpHash The hash of the user operation.
      * @return validationData Encoded validation result per EIP-4337.
      */
-    function _validateSignature(
-        PackedUserOperation calldata userOp,
-        bytes32 userOpHash
-    )
+    function _validateSignature(PackedUserOperation calldata userOp, bytes32 userOpHash)
         internal
         virtual
         returns (uint256 validationData)
@@ -164,10 +149,7 @@ contract AA_Contract is IAccount, Ownable {
      */
     function _payPrefund(uint256 missingAccountFunds) internal virtual {
         if (missingAccountFunds != 0) {
-            (bool success, ) = payable(msg.sender).call{
-                value: missingAccountFunds,
-                gas: gasleft()
-            }("");
+            (bool success,) = payable(msg.sender).call{value: missingAccountFunds, gas: gasleft()}("");
             (success); // Silence compiler warning
         }
     }

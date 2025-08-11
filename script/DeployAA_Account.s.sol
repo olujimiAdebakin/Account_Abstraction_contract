@@ -6,7 +6,6 @@ import {AA_Contract} from "src/ethereum/AA_Contract.sol";
 import {HelperConfig} from "script/HelperConfig.s.sol";
 
 contract DeployAA_Account is Script {
-
     function run() public returns (HelperConfig, AA_Contract) {
         return deployAA_Contract();
     }
