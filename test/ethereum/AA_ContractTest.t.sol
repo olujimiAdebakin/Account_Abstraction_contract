@@ -10,6 +10,7 @@ import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 import {SendPackedUserOp, PackedUserOperation} from "script/SendPackedUserOp.s.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
+import {IEntryPoint} from "lib/account-abstraction/contracts/interfaces/IEntryPoint.sol";
 
 
 
@@ -75,7 +76,7 @@ contract AA_ContractTest is Test {
       }
 
 
-     function testRecoverSignedOp() public view {
+     function testRecoverSignedOp() public {
     // Arrange
     assertEq(usdc.balanceOf(address(aaContract)), 0, "Initial balance should be zero");
 
@@ -99,17 +100,24 @@ contract AA_ContractTest is Test {
     // Call helper to create the PackedUserOperation
     PackedUserOperation memory packedUserOp = sendPackedUserOp.generateSignedUserOp(
         executeCallData,
+        address(aaContract),
         helperConfig.getConfig()
     );
     bytes32 userOpHash = IEntryPoint(helperConfig.getConfig().entryPoint).getUserOpHash(packedUserOp);
 
       // Get the userOpHash
 
-      ECDSA.recover(userOpHash.toEthSignedMessageHash(userOpHash), packedUserOp.signature);
+      address actualSigner = ECDSA.recover(userOpHash.toEthSignedMessageHash(), packedUserOp.signature);
+
+      assertEq(actualSigner, aaContract.owner(), "Recovered signer should match AA_Contract owner");
+      
+      // assertEq(recovered, address(aaContract), "Recovered signer should match AA_Contract owner");
+      
+      // console.log("Recovered signer: %s", recovered);
 }
 
 
-      function testValidationOfUserOps() public {
+      // function testValidationOfUserOps() public {
             
-      }
+      // }
 }

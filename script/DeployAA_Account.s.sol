@@ -25,7 +25,7 @@ contract DeployAA_Account is Script {
         AA_Contract aaContract = new AA_Contract(config.entryPoint);
 
         // Transfer ownership to the deployer (msg.sender)
-        aaContract.transferOwnership(msg.sender);
+        aaContract.transferOwnership(config.account);
 
         vm.stopBroadcast();
 

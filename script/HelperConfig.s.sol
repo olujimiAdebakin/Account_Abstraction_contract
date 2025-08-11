@@ -26,6 +26,7 @@ contract HelperConfig is Script{
 //     EOA: 0x45630a7Db07604f82a1D2ccf8509eb375b1826C6
     address constant BURNER_WALLET = 0xCCe6662d417Cc62641F096e926557c5816623bf5; // Replace with your actual address
     
+    address constant ANVIL_DEFAULT_ACCOUNT = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
     
     // State Variables
     NetworkConfig public localNetworkConfig;
@@ -67,11 +68,23 @@ contract HelperConfig is Script{
         // In a real scenario, you'd deploy a MockEntryPoint.sol here.
         // Example: localNetworkConfig = NetworkConfig({ entryPoint: mockEntryPointAddress, account: BURNER_WALLET });
         // Fallback for this lesson (actual mock deployment not shown):
-        NetworkConfig memory sepoliaConfig = getEthSepoliaConfig(); // Or a specific local mock entry point
+        // NetworkConfig memory sepoliaConfig = getEthSepoliaConfig(); // Or a specific local mock entry point
+        // localNetworkConfig = NetworkConfig({
+        //     entryPoint: sepoliaConfig.entryPoint, // Replace with actual mock entry point if deployed
+        //     account: BURNER_WALLET
+        // });
+        // return localNetworkConfig;
+
+        console2.log("Deploying mocks....");
+        vm.startBroadcast(ANVIL_DEFAULT_ACCOUNT);
+        EntryPoint entryPoint = new EntryPoint();
+        vm.stopBroadcast();
+
         localNetworkConfig = NetworkConfig({
-            entryPoint: sepoliaConfig.entryPoint, // Replace with actual mock entry point if deployed
-            account: BURNER_WALLET
+            entryPoint: address(entryPoint),
+            account: ANVIL_DEFAULT_ACCOUNT
         });
+
         return localNetworkConfig;
     }
 
@@ -93,4 +106,6 @@ contract HelperConfig is Script{
     function getConfig() public returns (NetworkConfig memory) {
         return getConfigByChainId(block.chainid);
     }
+
+
 }
