@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
-import {Script} from "forge-std/Script.sol";
+import {Script, console2} from "forge-std/Script.sol";
 import {AA_Contract} from "src/ethereum/AA_Contract.sol";
+import {EntryPoint} from "lib/account-abstraction/contracts/core/EntryPoint.sol";
 
 
 contract HelperConfig is Script{
@@ -85,6 +86,9 @@ contract HelperConfig is Script{
         revert("HelperConfig__InvalidChainId()");
     }
     
+    // deploy mocks
+    // console2.log("Deploying mocks...");
+    // EntryPoint entrypoint = new EntryPoint();
 
     function getConfig() public returns (NetworkConfig memory) {
         return getConfigByChainId(block.chainid);

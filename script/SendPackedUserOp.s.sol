@@ -5,15 +5,22 @@ pragma solidity 0.8.26;
 import {Script} from "forge-std/Script.sol";
 import {AA_Contract} from "src/ethereum/AA_Contract.sol";
 import {PackedUserOperation} from "lib/account-abstraction/contracts/interfaces/PackedUserOperation.sol"; 
+import {HelperConfig} from "script/HelperConfig.s.sol";
+import { IEntryPoint } from "lib/account-abstraction/contracts/interfaces/IEntryPoint.sol";
+import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
+
 
 
 contract SendPackedUserOp is Script{
+
+    HelperConfig helperConfig;
+    using MessageHashUtils for bytes32;
       
       function run() public {
 
       }
 
-      function  generateSignedUserOp(bytes memory callData, address sender) public returns (PackedUserOperation memory) {
+      function generateSignedUserOp(bytes memory callData, address sender, HelperConfig.NetworkConfig memory config) public view returns (PackedUserOperation memory) {
             // This function would generate a packed User Operation
             // and return it as bytes.
             // The actual implementation would depend on the User Operation structure.
@@ -22,11 +29,21 @@ contract SendPackedUserOp is Script{
             uint256 nonce = vm.getNonce(sender); // Example nonce
             PackedUserOperation memory unsignedUserOp = _generateUnsignedUserOp(
                   callData, // The method call to execute on this account
-                  sender,   // The sender account of this request
+                  config.account,   // The sender account of this request
                   nonce     // Unique value the sender uses to verify it is not a replay    
             );
-            
-            // 2. Sign it, and return it
+
+            // 2. Get the userOp Hash
+           bytes32 userOpHash = IEntryPoint(config.entryPoint).getUserOpHash(unsignedUserOp);
+           bytes32 digest = userOpHash.toEthSignedMessageHash();
+
+
+            // 3. Sign it, and return it
+           (uint8 v, bytes32 r, bytes32 s) = vm.sign(config.account, digest); // Replace with actual private key or signing logic
+            unsignedUserOp.signature = abi.encodePacked(r, s, v);
+
+            return unsignedUserOp;
+
 
             
       }

@@ -7,14 +7,21 @@ import {AA_Contract} from "src/ethereum/AA_Contract.sol";
 import {HelperConfig} from "script/HelperConfig.s.sol";
 import {DeployAA_Account} from "script/DeployAA_Account.s.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
+import {SendPackedUserOp, PackedUserOperation} from "script/SendPackedUserOp.s.sol";
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 
 
 contract AA_ContractTest is Test {
 
+      using MessageHashUtils for bytes32;
+
+      // State Variables
       HelperConfig helperConfig;
       AA_Contract aaContract;
       ERC20Mock usdc;
+      SendPackedUserOp sendPackedUserOp;
 
       // address randomAddress = address(0x1234567890123456789012345678901234567890);
       address randomUser = makeAddr("randomUser");
@@ -27,6 +34,7 @@ contract AA_ContractTest is Test {
             (helperConfig, aaContract) = deployAA_Contract.deployAA_Contract();
             assertTrue(address(aaContract) != address(0), "AA_Contract deployment failed");
             usdc = new ERC20Mock();
+            sendPackedUserOp = new SendPackedUserOp();
       }
 
       // USDC Approval
@@ -65,6 +73,40 @@ contract AA_ContractTest is Test {
             aaContract.execute(dest, value, functionData);
             vm.stopPrank();
       }
+
+
+     function testRecoverSignedOp() public view {
+    // Arrange
+    assertEq(usdc.balanceOf(address(aaContract)), 0, "Initial balance should be zero");
+
+    address dest = address(usdc);
+    uint256 value = 0;
+
+    bytes memory functionData = abi.encodeWithSelector(
+        ERC20Mock.mint.selector,
+        address(aaContract),
+        AMOUNT
+    );
+
+    // Build calldata for AA_Contract.execute(...)
+    bytes memory executeCallData = abi.encodeWithSelector(
+        AA_Contract.execute.selector, // must be a function in AA_Contract
+        dest,
+        value,
+        functionData
+    );
+
+    // Call helper to create the PackedUserOperation
+    PackedUserOperation memory packedUserOp = sendPackedUserOp.generateSignedUserOp(
+        executeCallData,
+        helperConfig.getConfig()
+    );
+    bytes32 userOpHash = IEntryPoint(helperConfig.getConfig().entryPoint).getUserOpHash(packedUserOp);
+
+      // Get the userOpHash
+
+      ECDSA.recover(userOpHash.toEthSignedMessageHash(userOpHash), packedUserOp.signature);
+}
 
 
       function testValidationOfUserOps() public {
