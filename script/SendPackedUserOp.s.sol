@@ -7,6 +7,8 @@ import {PackedUserOperation} from "lib/account-abstraction/contracts/interfaces/
 import {HelperConfig} from "script/HelperConfig.s.sol";
 import {IEntryPoint} from "lib/account-abstraction/contracts/interfaces/IEntryPoint.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
+import { IAccount } from "account-abstraction/interfaces/IAccount.sol";
+
 
 contract SendPackedUserOp is Script {
     HelperConfig helperConfig;
@@ -15,20 +17,24 @@ contract SendPackedUserOp is Script {
 
     function run() public {}
 
-    function generateSignedUserOp(bytes memory callData, address sender, HelperConfig.NetworkConfig memory config)
+    function generateSignedUserOp(bytes memory callData, HelperConfig.NetworkConfig memory config, address aaContract)
         public
         view
         returns (PackedUserOperation memory)
     {
+            // 1. Get nonce from smart account
+    // uint256 nonce = IAccount(aaContract).getNonce(); // or BaseAccount(aaContract).nonce()
+
         // This function would generate a packed User Operation
         // and return it as bytes.
         // The actual implementation would depend on the User Operation structure.
 
         // 1. Generate the unsigned Data
-        uint256 nonce = vm.getNonce(sender); // Example nonce
+        uint256 nonce = vm.getNonce(aaContract) - 1; // Example nonce
         PackedUserOperation memory unsignedUserOp = _generateUnsignedUserOp(
             callData, // The method call to execute on this account
-            config.account, // The sender account of this request
+            // config.account, // The sender account of this request
+            aaContract,
             nonce // Unique value the sender uses to verify it is not a replay
         );
 

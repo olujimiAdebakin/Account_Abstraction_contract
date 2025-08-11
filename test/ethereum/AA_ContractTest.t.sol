@@ -88,7 +88,7 @@ contract AA_ContractTest is Test {
 
         // Call helper to create the PackedUserOperation
         PackedUserOperation memory packedUserOp =
-            sendPackedUserOp.generateSignedUserOp(executeCallData, address(aaContract), helperConfig.getConfig());
+            sendPackedUserOp.generateSignedUserOp(executeCallData, address(aaContract), helperConfig.getConfig(), address(aaContract));
         bytes32 userOpHash = IEntryPoint(helperConfig.getConfig().entryPoint).getUserOpHash(packedUserOp);
 
         // Get the userOpHash
@@ -124,7 +124,7 @@ contract AA_ContractTest is Test {
 
         // Call helper to create the PackedUserOperation
         PackedUserOperation memory packedUserOp =
-            sendPackedUserOp.generateSignedUserOp(executeCallData, address(aaContract), helperConfig.getConfig());
+            sendPackedUserOp.generateSignedUserOp(executeCallData, address(aaContract), helperConfig.getConfig(), address(aaContract));
         bytes32 userOpHash = IEntryPoint(helperConfig.getConfig().entryPoint).getUserOpHash(packedUserOp);
         uint256 missingAccountFunds = 1e18;
 
@@ -137,7 +137,104 @@ contract AA_ContractTest is Test {
     }
 
     function testEntryPointCanExecuteCommands() public {
-        
+
+                // Arrange
+        assertEq(usdc.balanceOf(address(aaContract)), 0, "Initial balance should be zero");
+
+        address dest = address(usdc);
+        uint256 value = 0;
+
+        bytes memory functionData = abi.encodeWithSelector(ERC20Mock.mint.selector, address(aaContract), AMOUNT);
+
+        // Build calldata for AA_Contract.execute(...)
+        bytes memory executeCallData = abi.encodeWithSelector(
+            AA_Contract.execute.selector, // must be a function in AA_Contract
+            dest,
+            value,
+            functionData
+        );
+
+        // Call helper to create the PackedUserOperation
+        PackedUserOperation memory packedUserOp =
+            sendPackedUserOp.generateSignedUserOp(executeCallData, address(aaContract), helperConfig.getConfig(), address(aaContract));
+        // bytes32 userOpHash = IEntryPoint(helperConfig.getConfig().entryPoint).getUserOpHash(packedUserOp);
+
+         vm.deal(address(aaContract) , 1e18); // Send some ether to the AA_Contract
+
+         PackedUserOperation[] memory ops = new PackedUserOperation[](1);
+        ops[0] = packedUserOp;
+        // Act
+
+        vm.prank(randomUser);
+        IEntryPoint(helperConfig.getConfig().entryPoint).handleOps(ops, payable(randomUser)
+        );
+
+        assertEq(usdc.balanceOf(address(aaContract)), AMOUNT,
+            "AA_Contract should have received minted USDC"
+        );
+        // aaContract.executeFromEntryPoint(packedUserOp, userOpHash);
+
     }
+
+//     function testEntryPointCanExecuteCommands() public {
+//     // -------- Arrange --------
+//     // Ensure AA_Contract starts with zero USDC balance
+//     assertEq(usdc.balanceOf(address(aaContract)), 0, "Initial balance should be zero");
+
+//     address dest = address(usdc);
+//     uint256 value = 0;
+
+//     // Prepare function call to mint tokens to the AA_Contract
+//     bytes memory functionData = abi.encodeWithSelector(
+//         ERC20Mock.mint.selector,
+//         address(aaContract),
+//         AMOUNT
+//     );
+
+//     // Prepare calldata for AA_Contract.execute(...)
+//     bytes memory executeCallData = abi.encodeWithSelector(
+//         AA_Contract.execute.selector, 
+//         dest,
+//         value,
+//         functionData
+//     );
+
+//     // Create PackedUserOperation with signed data
+//     PackedUserOperation memory packedUserOp =
+//         sendPackedUserOp.generateSignedUserOp(
+//             executeCallData,
+//             address(aaContract),
+//             helperConfig.getConfig()
+//         );
+
+//     // Compute UserOp hash (for verification if needed)
+//     bytes32 userOpHash = IEntryPoint(helperConfig.getConfig().entryPoint)
+//         .getUserOpHash(packedUserOp);
+
+//     // -------- Act --------
+//     // Execute the user operation through the EntryPoint
+//     IEntryPoint(helperConfig.getConfig().entryPoint)
+//         .handleOps(
+//             _toSingletonArray(packedUserOp), // helper to wrap into array
+//             payable(address(0)) // beneficiary (could be a test address)
+//         );
+
+//     // -------- Assert --------
+//     // Verify AA_Contract received the minted USDC
+//     assertEq(
+//         usdc.balanceOf(address(aaContract)),
+//         AMOUNT,
+//         "AA_Contract should have received minted USDC"
+//     );
+// }
+
+// // Helper: wrap a single op in an array
+// function _toSingletonArray(
+//     PackedUserOperation memory op
+// ) internal pure returns (PackedUserOperation[] memory arr) {
+//     arr = new PackedUserOperation ;
+//     arr[0] = op;
+// }
+
 
 }
