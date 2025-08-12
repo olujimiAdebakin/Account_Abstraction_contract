@@ -158,7 +158,7 @@ contract AA_Contract is IAccount, Ownable {
         returns (uint256 validationData)
     {
         // Hash the user operation hash with the Ethereum signed message prefix "\x19Ethereum Signed Message:\n32".
-        bytes32 ethSignedMessageHash = MessageHashUtils.toEthSignedMessageHash(userOpOpHash);
+        bytes32 ethSignedMessageHash = MessageHashUtils.toEthSignedMessageHash(userOpHash);
         // Recover the signer address from the signed message hash and the provided signature.
         address signer = ECDSA.recover(ethSignedMessageHash, userOp.signature);
         // Check if the recovered signer is the owner of this smart account.

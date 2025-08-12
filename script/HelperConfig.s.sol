@@ -104,8 +104,9 @@ contract HelperConfig is Script {
      * @dev This function uses `pure` as it doesn't read or write to state. It returns a fixed configuration with the official EntryPoint address for Sepolia.
      * @return A `NetworkConfig` struct containing the EntryPoint and burner account for Sepolia.
      */
-    function getEthSepoliaConfig() public pure returns (NetworkConfig memory) {
-        return NetworkConfig({entryPoint: 0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789, account: BURNER_WALLET});
+    function getEthSepoliaConfig() public returns (NetworkConfig memory) {
+        address deployer = vm.addr(vm.envUint("PRIVATE_KEY"));
+        return NetworkConfig({entryPoint: 0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789, account: deployer });
     }
 
     /**

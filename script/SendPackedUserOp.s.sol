@@ -52,7 +52,9 @@ contract SendPackedUserOp is Script {
      * @notice The main entry point for the Foundry script.
      * @dev This function is required by Foundry's `Script` contract but is left empty as the core logic is in other utility functions.
      */
-    function run() public {}
+    function run() public {
+        
+    }
 
     /**
      * @notice Generates a fully signed `PackedUserOperation` for an Account Abstraction contract.
