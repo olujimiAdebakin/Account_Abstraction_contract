@@ -15,6 +15,8 @@ pragma solidity 0.8.26;
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+CONTRACT DEPLOYED ON SEPOLIA TEST = 0x0780FbC5eb9BfA684154A8f0220aC59707256b41
+
 import {IAccount} from "lib/account-abstraction/contracts/interfaces/IAccount.sol";
 import {PackedUserOperation} from "lib/account-abstraction/contracts/interfaces/PackedUserOperation.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";

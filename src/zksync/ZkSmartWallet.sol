@@ -28,6 +28,12 @@ import {Transaction} from "lib/foundry-era-contracts/src/system-contracts/contra
 
 contract ZkSmartWallet is IAccount {
 
+      ///////////////////////////////////////////
+      ////////// EXTERNAL FUNCTIONS //////////
+      ///////////////////////////////////////////
+
+      // MUST INCREASE THE NONCE
+      // mUST RETURN THE MAGIC VALUE
           function validateTransaction(bytes32 _txHash, bytes32 _suggestedSignedHash, Transaction memory _transaction)
         external
         payable
@@ -51,6 +57,29 @@ contract ZkSmartWallet is IAccount {
     function prepareForPaymaster(bytes32 _txHash, bytes32 _possibleSignedHash, Transaction memory _transaction)
         external
         payable{}
+
+
+         ///////////////////////////////////////////
+      ////////// EXTERNAL FUNCTIONS //////////
+      ///////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       
       // function validateTransaction(
       //       bytes32 _txHash,
